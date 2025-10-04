@@ -1,48 +1,149 @@
 # Ghost No-Database Setup
-Ultra-simple Ghost deployment with in-memory SQLite database
+Ultra-simple Ghost deployment with SQLite database (no external database required)
+
+This can be run locally with docker using:
+
+```Docker config for ghost tested on arm64
+
+docker run -d --name ghost-blog -p 2368:2368 -e NODE_ENV=development -e database__client=sqlite3 -e database__connection__filename=/var/lib/ghost/content/data/ghost.db -e database__useNullAsDefault=true ghost:5-alpine
+
+http://localhost:2368
+```
+
+
 
 ## ⚠️ Important Note
-**Data will be lost when the container restarts** - this setup uses an in-memory database with no persistence. Perfect for:
+**Data persistence depends on configuration** - this setup can use either:
+- **In-memory SQLite** (`:memory:`) - data lost on container restart
+- **Persistent SQLite** (file-based) - data survives container restarts
+
+Perfect for:
 - Testing deployments
 - Temporary setups  
-- Platforms that don't support persistent storage
+- Platforms that don't support external databases
 - Quick demos or prototypes
 
-## Quick Start
+
+
+## Configuration Method Evolution
+
+### Original Approach (Environment Variables)
+Initially, Ghost was configured using Docker environment variables:
 
 ```bash
-# Start Ghost with in-memory database
+docker run -d --name ghost-blog -p 2368:2368 \
+  -e NODE_ENV=development \
+  -e database__client=sqlite3 \
+  -e database__connection__filename=/var/lib/ghost/content/data/ghost.db \
+  -e database__useNullAsDefault=true \
+  ghost:5-alpine
+```
+
+**Limitations:**
+- Requires deployment platforms to support custom environment variables
+- Not compatible with platforms that only accept image names
+- Complex command-line syntax
+
+### Current Approach (Configuration Files)
+Now uses mounted configuration files for maximum compatibility:
+
+```bash
+docker run -d --name ghost-blog -p 2368:2368 \
+  -v /path/to/config.production.json:/var/lib/ghost/config.production.json \
+  ghost:5-alpine
+```
+
+
+
+## Files
+
+- `docker-compose.yml`: Docker Compose setup (uses environment variables)
+- `config.production.json`: Complete Ghost configuration for SQLite database
+- `config.development.json`: Development mode configuration
+- `QUICK-START.md`: Quick reference commands
+
+## Configuration Options
+
+### In-Memory Database (Temporary)
+```json
+{
+  "database": {
+    "client": "sqlite3",
+    "connection": {
+      "filename": ":memory:"
+    },
+    "useNullAsDefault": true
+  }
+}
+```
+**Note:** Data lost on container restart, may have initialization timing issues.
+
+### Persistent Database (Recommended)
+```json
+{
+  "database": {
+    "client": "sqlite3",
+    "connection": {
+      "filename": "/var/lib/ghost/content/data/ghost.db"
+    },
+    "useNullAsDefault": true
+  }
+}
+```
+**Note:** Data persists across container restarts, more reliable.
+
+## Usage
+
+### Method 1: Docker Compose (Environment Variables)
+```bash
+# Clone this repository
+git clone <repository-url>
+cd Ghost-no-db
+
+# Start with Docker Compose
 docker-compose up -d
 
 # Access Ghost at http://localhost:2368
 ```
 
-## What This Does
+### Method 2: Docker Run (Configuration Files) - Recommended
+```bash
+# Clone this repository
+git clone <repository-url>
+cd Ghost-no-db
 
-- Uses Ghost with in-memory SQLite database (`:memory:`)
-- No persistent storage or volumes needed
-- No complex database configurations
-- No command-line environment variables required
-- Minimal Docker Compose setup
+# Start with configuration file mount
+docker run -d --name ghost-blog -p 2368:2368 \
+  -v $(pwd)/config.production.json:/var/lib/ghost/config.production.json \
+  ghost:5-alpine
 
-## Files
+# Access Ghost at http://localhost:2368
+```
 
-- `docker-compose.yml`: Minimal Ghost setup with in-memory database
-- `config.production.json`: Ghost configuration for in-memory SQLite
-- `config.development.json`: Ghost configuration for development mode
+### Method 3: Deployment Platform Compatible
+For platforms that only accept image names:
+```bash
+# Mount the config file and run
+docker run -d --name ghost-blog -p 2368:2368 \
+  -v /path/to/config.production.json:/var/lib/ghost/config.production.json \
+  ghost:5-alpine
+```
 
-## Usage
 
-1. Clone this repository
-2. Run `docker-compose up -d`
-3. Access Ghost at `http://localhost:2368`
-4. Set up your Ghost admin account
-5. Start creating content!
 
 ## Stopping
 
+### Docker Compose
 ```bash
 docker-compose down
 ```
 
-**Remember**: All data will be lost when you stop the container.
+### Docker Run
+```bash
+docker stop ghost-blog
+docker rm ghost-blog
+```
+
+**Remember**: 
+- In-memory database: All data will be lost when you stop the container
+- Persistent database: Data survives container restarts
