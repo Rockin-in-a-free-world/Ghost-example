@@ -32,6 +32,7 @@ docker run -d --name ghost-blog -p 2368:2368 \
 ```
 
 ### Method 3: Local Testing (Docker Compose)
+**See [docker-compose.yml](docker-compose.yml) for configuration**
 ```bash
 sudo docker-compose up -d
 ```
