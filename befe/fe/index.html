@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ghost Frontend</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .header {
+            border-bottom: 1px solid #eee;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .post {
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            background: #fafafa;
+        }
+        .post-title {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .post-meta {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+        .post-content {
+            color: #444;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        .error {
+            background: #fee;
+            border: 1px solid #fcc;
+            color: #c33;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .site-info {
+            background: #f0f8ff;
+            border: 1px solid #b0d4f1;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // Ghost API Configuration
+        const GHOST_API_URL = 'https://ghost-be-api-interface.build001.nodeops.network/ghost/api/content';
+        const GHOST_API_KEY = '510200fe6174e47985bd4a34b5';
+
+        // API Helper Functions
+        async function fetchGhostData(endpoint) {
+            try {
+                const response = await fetch(`${GHOST_API_URL}/${endpoint}?key=${GHOST_API_KEY}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return await response.json();
+            } catch (error) {
+                console.error('API Error:', error);
+                throw error;
+            }
+        }
+
+        // Components
+        function PostCard({ post }) {
+            return (
+                <div className="post">
+                    <h2 className="post-title">{post.title}</h2>
+                    <div className="post-meta">
+                        Published: {new Date(post.published_at).toLocaleDateString()}
+                    </div>
+                    <div className="post-content" dangerouslySetInnerHTML={{ __html: post.html }} />
+                </div>
+            );
+        }
+
+        function SiteInfo({ settings }) {
+            return (
+                <div className="site-info">
+                    <h1>{settings.title}</h1>
+                    <p>{settings.description}</p>
+                    <p><strong>Site URL:</strong> {settings.url}</p>
+                </div>
+            );
+        }
+
+        function App() {
+            const [posts, setPosts] = useState([]);
+            const [settings, setSettings] = useState(null);
+            const [loading, setLoading] = useState(true);
+            const [error, setError] = useState(null);
+
+            useEffect(() => {
+                async function loadData() {
+                    try {
+                        setLoading(true);
+                        setError(null);
+                        
+                        // Fetch posts and settings in parallel
+                        const [postsData, settingsData] = await Promise.all([
+                            fetchGhostData('posts'),
+                            fetchGhostData('settings')
+                        ]);
+                        
+                        setPosts(postsData.posts || []);
+                        setSettings(settingsData.settings || null);
+                    } catch (err) {
+                        setError(`Failed to load data: ${err.message}`);
+                    } finally {
+                        setLoading(false);
+                    }
+                }
+
+                loadData();
+            }, []);
+
+            if (loading) {
+                return <div className="loading">Loading Ghost content...</div>;
+            }
+
+            return (
+                <div>
+                    <div className="header">
+                        <h1>Ghost Frontend</h1>
+                        <p>Consuming data from Ghost Backend API</p>
+                    </div>
+
+                    {error && <div className="error">{error}</div>}
+
+                    {settings && <SiteInfo settings={settings} />}
+
+                    <h2>Posts ({posts.length})</h2>
+                    {posts.length === 0 ? (
+                        <p>No posts found.</p>
+                    ) : (
+                        posts.map(post => (
+                            <PostCard key={post.id} post={post} />
+                        ))
+                    )}
+                </div>
+            );
+        }
+
+        // Render the app
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>
