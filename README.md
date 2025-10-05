@@ -1,20 +1,6 @@
 # Ghost No-Database Setup
 Ultra-simple Ghost deployment with SQLite database (no external database required)
 
-## Platform Deployment Configuration
-
-For deployment platforms that only support image, port, and environment variables:
-
-1. **Docker Image:** `ghost:5-alpine`
-2. **Port:** `2368`
-3. **Environment Variables:**
-   - `NODE_ENV` = `production`
-   - `database__client` = `sqlite3`
-   - `database__connection__filename` = `/var/lib/ghost/content/data/ghost.db`
-   - `database__useNullAsDefault` = `true`
-
-**Note:** `database__useNullAsDefault` is required for SQLite to properly handle NULL values in Ghost's database schema.
-
 ## ⚠️ Important Note
 **Data persistence depends on configuration** - this setup can use either:
 - **In-memory SQLite** (`:memory:`) - data lost on container restart
@@ -27,24 +13,27 @@ Perfect for:
 - Quick demos or prototypes
 
 
+## Three Identical Methods
 
-## Two Identical Methods
+All three methods configure Ghost identically - just different ways to launch:
 
-Both methods configure Ghost identically - just different ways to launch Docker:
+### Method 1: Platform Deployment
+**See [QUICK-START.md](QUICK-START.md) for platform configuration details**
+- Image: `ghost:5-alpine`
+- Port: `2368`
+- Environment Variables: `NODE_ENV`, `database__client`, `database__connection__filename`, `database__useNullAsDefault`
 
-### Method 1: Platform Deployment (Environment Variables)
+### Method 2: Local Testing (Docker Run)
 ```bash
 docker run -d --name ghost-blog -p 2368:2368 \
+  -v $(pwd)/config.production.json:/var/lib/ghost/config.production.json \
   -e NODE_ENV=production \
-  -e database__client=sqlite3 \
-  -e database__connection__filename=/var/lib/ghost/content/data/ghost.db \
-  -e database__useNullAsDefault=true \
   ghost:5-alpine
 ```
 
-### Method 2: Local Development (Configuration Files)
+### Method 3: Local Testing (Docker Compose)
 ```bash
-docker-compose up -d
+sudo docker-compose up -d
 ```
 
 **Same result:** Ghost with persistent SQLite database on port 2368
@@ -73,4 +62,4 @@ docker stop ghost-blog
 docker rm ghost-blog
 ```
 
-**Note:** With the persistent SQLite configuration, your data will survive container restarts.
+**Note:** With the persistent SQLite configuration, your data will survive container restarts IF the db is not deleted.
