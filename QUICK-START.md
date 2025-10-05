@@ -1,31 +1,25 @@
 # Ghost No-Database Setup
 
-## DEPLOYMENT PLATFORM SETTINGS
+## ⚠️ Important Note
+**Data will be lost when the container restarts** - this setup uses an in-memory database with no persistence.
 
-**Image:** `ghost:5-alpine`
+## Platform Configuration (4 Items Required)
 
-**Port:** `2368`
+1. **Docker Image:** `ghost:5-alpine`
+2. **Port:** `2368`
+3. **Volume Mount:** `config.production.json` → `/var/lib/ghost/config.production.json`
+4. **Environment Variable:** `NODE_ENV=production`
 
-**Volume Mount:** 
-```
-/path/to/config.production.json:/var/lib/ghost/config.production.json
-```
+## Files Needed
+- `config.production.json` (included in this repo)
 
-**Note:** This setup requires SQLite database configuration. If the deployment platform doesn't support volume mounts for configuration files, you'll need to use environment variables or build a custom image with the configuration baked in.
+## Access
+After deployment: `http://localhost:2368` (or your platform's assigned URL)
 
-## Alternative: Custom Image with Config
+## What This Does
+- Uses Ghost with in-memory SQLite database (`:memory:`)
+- No persistent storage needed
+- No external database required
+- Minimal configuration
 
-**Dockerfile:**
-```dockerfile
-FROM ghost:5-alpine
-COPY config.production.json /var/lib/ghost/config.production.json
-```
-
-**Build Command:**
-```bash
-docker build -t ghost-no-db .
-```
-
-**Deployment Settings:**
-- **Image:** `ghost-no-db` (or your custom image name)
-- **Port:** `2368`
+**Remember**: All data will be lost when the container stops.
