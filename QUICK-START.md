@@ -1,31 +1,19 @@
 # Ghost No-Database Setup
 
-## DEPLOYMENT PLATFORM SETTINGS
+## Platform Configuration (6 Items Required)
 
-**Image:** `ghost:5-alpine`
+1. **Docker Image:** `ghost:5-alpine`
+2. **Port:** `2368`
+3. **Environment Variables:**
+   - `NODE_ENV` = `production`
+   - `database__client` = `sqlite3`
+   - `database__connection__filename` = `/var/lib/ghost/content/data/ghost.db`
+   - `database__useNullAsDefault` = `true`
 
-**Port:** `2368`
+## What This Does
+- Uses Ghost with persistent SQLite database
+- No external database required
+- Data survives container restarts
+- Minimal configuration needed
 
-**Volume Mount:** 
-```
-/path/to/config.production.json:/var/lib/ghost/config.production.json
-```
-
-**Note:** This setup requires SQLite database configuration. If the deployment platform doesn't support volume mounts for configuration files, you'll need to use environment variables or build a custom image with the configuration baked in.
-
-## Alternative: Custom Image with Config
-
-**Dockerfile:**
-```dockerfile
-FROM ghost:5-alpine
-COPY config.production.json /var/lib/ghost/config.production.json
-```
-
-**Build Command:**
-```bash
-docker build -t ghost-no-db .
-```
-
-**Deployment Settings:**
-- **Image:** `ghost-no-db` (or your custom image name)
-- **Port:** `2368`
+**Note:** `database__useNullAsDefault` is required for SQLite to properly handle NULL values in Ghost's database schema.
