@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 
 // Ghost API Configuration
 const GHOST_API_URL = 'https://ghost-be-api-interface.build001.nodeops.network/ghost/api/content';
-const GHOST_API_KEY = '510200fe6174e47985bd4a34b5';
+const GHOST_API_KEY = '24c1d35e0d259551b0634ea794';
 
 // API Helper Functions
 async function fetchGhostData(endpoint) {

@@ -43,8 +43,8 @@ befe/
 - **Admin API**: `https://ghost-be-api-interface.build001.nodeops.network/ghost/api/admin/`
 
 **Platform API Keys:**
-- **Content API Key**: `510200fe6174e47985bd4a34b5`
-- **Admin API Key**: `68e24dea335b790001c0c867:ab7cfc68538ac5e6bf41e772b4a6b8c7baace626212f473b2add5ce482c3af25`
+- **Content API Key**: `24c1d35e0d259551b0634ea794`
+- **Admin API Key**: `68e6481d6a40b30001055682:dd2f238d43518978d8d52fac6e204f3961628efc4cd0d5b7d620310cc75c8c4c`
 
 **Local API Keys (for reference):**
 - **Content API Key**: `ebcfbb2cef4e329441f12a6f61`
